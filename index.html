@@ -229,6 +229,424 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/19/%E4%B8%80%E4%B8%AABIO%E5%9D%97%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E4%BE%8B%E5%AD%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="欢迎来到小张张最帅的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/07/19/%E4%B8%80%E4%B8%AABIO%E5%9D%97%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E4%BE%8B%E5%AD%90/" itemprop="url">一个BIO块设备驱动例子</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-19T18:06:20+08:00">
+                2020-07-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>‘’’<br>#include &lt;linux/init.h&gt;<br>#include &lt;linux/module.h&gt;<br>#include &lt;linux/kernel.h&gt;<br>#include &lt;linux/fs.h&gt;<br>#include &lt;linux/errno.h&gt;<br>#include &lt;linux/types.h&gt;<br>#include &lt;linux/fcntl.h&gt;<br>#include &lt;linux/vmalloc.h&gt;<br>#include &lt;linux/hdreg.h&gt;<br>#include &lt;linux/blkdev.h&gt;<br>#include &lt;linux/blkpg.h&gt;<br>#include &lt;asm/uaccess.h&gt;  </p>
+<p>#define BLK_NAME “ram_blk”<br>#define BLK_MAJOR 222<br>#define DISK_SECTOR_SIZE 512 //每扇区大小<br>#define DISK_SECTOR 1024  //总扇区数，<br>#define DISK_SIZE (DISK_SECTOR_SIZE*DISK_SECTOR)//总大小，共0.5M  </p>
+<p>typedef struct//设备结构体<br>{<br>       unsigned char          *data;<br>       struct request_queue   *queue;<br>       struct gendisk         *gd;<br>} disk_dev;  </p>
+<p>disk_dev device;//定义设备结构体  </p>
+<p>//————————————————————————–<br>//在硬盘等带柱面扇区等的设备上使用request，可以整理队列。但是ramdisk等可以<br>//使用make_request<br>static int disk_make_request(struct request_queue <em>q,struct bio <em>bio)<br>{<br>       int i;<br>       char *mem_pbuf;<br>       char *disk_pbuf;<br>       disk_dev *pdevice;<br>       struct bio_vec *pbvec;<br>       /</em>在遍历段之前先判断要传输数据的总长度大小是否超过范围</em>/<br>       i=bio-&gt;bi_sector*DISK_SECTOR_SIZE+bio-&gt;bi_size;<br>       if(i&gt;DISK_SIZE)//判断是否超出范围<br>              goto fail;  </p>
+<pre><code>pdevice=(disk_dev*)bio-&gt;bi_bdev-&gt;bd_disk-&gt;private_data;//得到设备结构体  
+disk_pbuf=pdevice-&gt;data+bio-&gt;bi_sector*DISK_SECTOR_SIZE;//得到要读写的起始位置  
+
+/*开始遍历这个bio中的每个bio_vec*/  
+bio_for_each_segment(pbvec,bio,i)//循环分散的内存segment  
+{  
+       mem_pbuf=kmap(pbvec-&gt;bv_page)+pbvec-&gt;bv_offset;//获得实际内存地址  
+       switch(bio_data_dir(bio))  
+       {//读写  
+              case READA:  
+              case READ:  
+                     memcpy(mem_pbuf,disk_pbuf,pbvec-&gt;bv_len);  
+                     break;  
+              case WRITE:  
+                     memcpy(disk_pbuf,mem_pbuf,pbvec-&gt;bv_len);  
+                     break;  
+              default:  
+                     kunmap(pbvec-&gt;bv_page);  
+                     goto fail;  
+       }  
+       kunmap(pbvec-&gt;bv_page);//清除映射  
+       disk_pbuf+=pbvec-&gt;bv_len;  
+}  
+bio_endio(bio,0);//这个函数2.6.25和2.6.4是不一样的，  
+return 0;  </code></pre><p>fail:<br>       bio_io_error(bio);//这个函数2.6.25和2.6.4是不一样的，<br>       return 0;<br>}  </p>
+<p>int blk_open(struct block_device *dev, fmode_t no)<br>{<br>       return 0;<br>}  </p>
+<p>int blk_release(struct gendisk *gd, fmode_t no)<br>{<br>       return 0;<br>}  </p>
+<p>int blk_ioctl(struct block_device *dev, fmode_t no, unsigned cmd, unsigned long arg)<br>{<br>       return -ENOTTY;<br>}  </p>
+<p>static struct block_device_operations blk_fops=<br>{<br>       .owner=THIS_MODULE,<br>       .open=blk_open,//<br>       .release=blk_release,//<br>       .ioctl=blk_ioctl,//<br>};  </p>
+<p>int disk_init(void)<br>{<br>        if(!register_blkdev(BLK_MAJOR,BLK_NAME));//注册驱动<br>    {<br>         printk(“register blk_dev succeed\n”);<br>    }  </p>
+<pre><code>   device.data=vmalloc(DISK_SIZE);  
+   device.queue=blk_alloc_queue(GFP_KERNEL);//生成队列  
+   blk_queue_make_request(device.queue,disk_make_request);/*注册make_request  绑定请求制造函数*/  
+
+printk(&quot;make_request succeed\n&quot;);  
+
+   device.gd=alloc_disk(1);//生成gendisk  
+   device.gd-&gt;major=BLK_MAJOR;//主设备号  
+   device.gd-&gt;first_minor=0;//此设备号  
+   device.gd-&gt;fops=&amp;blk_fops;//块文件结构体变量  
+   device.gd-&gt;queue=device.queue;//请求队列  
+   device.gd-&gt;private_data=&amp;device;  
+   sprintf(device.gd-&gt;disk_name,&quot;disk%c&quot;,&apos;a&apos;);//名字  
+   set_capacity(device.gd,DISK_SECTOR);//设置大小  
+   add_disk(device.gd);//注册块设备信息  
+printk(&quot;gendisk succeed\n&quot;);      
+   return 0;  </code></pre><p>}  </p>
+<p>void disk_exit(void)<br>{  </p>
+<pre><code>del_gendisk(device.gd);  
+put_disk(device.gd);  
+unregister_blkdev(BLK_MAJOR,BLK_NAME);  
+vfree(device.data);  
+ printk(&quot;free succeed\n&quot;);  </code></pre><p>}  </p>
+<p>module_init(disk_init);<br>module_exit(disk_exit);  </p>
+<p>MODULE_LICENSE(“Dual BSD/GPL”);  </p>
+<p>‘’’</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/18/deploy-k8s/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="欢迎来到小张张最帅的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/07/18/deploy-k8s/" itemprop="url">deploy_k8s</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-18T13:34:04+08:00">
+                2020-07-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/18/test/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="欢迎来到小张张最帅的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/07/18/test/" itemprop="url">test</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-18T10:36:08+08:00">
+                2020-07-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/18/introduce/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -404,7 +822,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -421,6 +839,15 @@
               </div>
             
 
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
             
 
           </nav>

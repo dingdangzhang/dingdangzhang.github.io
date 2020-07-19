@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="linux," />
 
 
 
@@ -79,16 +79,17 @@
 
 
 
-<meta name="description" content="简介欢迎你来到我的个人博客，这里是记录和分享我个人学习的地方，希望记录的信息能在你学习的道路上帮助到你">
+<meta name="description" content="‘’’#include &lt;linux&#x2F;init.h&gt;#include &lt;linux&#x2F;module.h&gt;#include &lt;linux&#x2F;kernel.h&gt;#include &lt;linux&#x2F;fs.h&gt;#include &lt;linux&#x2F;errno.h&gt;#include &lt;linux&#x2F;types.h&gt;#include &lt;linux&#x2F;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="introduce">
-<meta property="og:url" content="http://yoursite.com/2020/07/18/introduce/index.html">
+<meta property="og:title" content="一个BIO块设备驱动例子">
+<meta property="og:url" content="http://yoursite.com/2020/07/19/%E4%B8%80%E4%B8%AABIO%E5%9D%97%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E4%BE%8B%E5%AD%90/index.html">
 <meta property="og:site_name" content="欢迎来到小张张最帅的博客">
-<meta property="og:description" content="简介欢迎你来到我的个人博客，这里是记录和分享我个人学习的地方，希望记录的信息能在你学习的道路上帮助到你">
+<meta property="og:description" content="‘’’#include &lt;linux&#x2F;init.h&gt;#include &lt;linux&#x2F;module.h&gt;#include &lt;linux&#x2F;kernel.h&gt;#include &lt;linux&#x2F;fs.h&gt;#include &lt;linux&#x2F;errno.h&gt;#include &lt;linux&#x2F;types.h&gt;#include &lt;linux&#x2F;">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-07-18T02:01:16.000Z">
-<meta property="article:modified_time" content="2020-07-18T02:34:59.721Z">
+<meta property="article:published_time" content="2020-07-19T10:06:20.000Z">
+<meta property="article:modified_time" content="2020-07-19T10:07:41.681Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="linux">
 <meta name="twitter:card" content="summary">
 
 
@@ -119,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/07/18/introduce/"/>
+  <link rel="canonical" href="http://yoursite.com/2020/07/19/一个BIO块设备驱动例子/"/>
 
 
 
 
 
-  <title>introduce | 欢迎来到小张张最帅的博客</title>
+  <title>一个BIO块设备驱动例子 | 欢迎来到小张张最帅的博客</title>
   
 
 
@@ -232,7 +233,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/18/introduce/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/19/%E4%B8%80%E4%B8%AABIO%E5%9D%97%E8%AE%BE%E5%A4%87%E9%A9%B1%E5%8A%A8%E4%BE%8B%E5%AD%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Doe">
@@ -249,7 +250,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">introduce</h1>
+          <h1 class="post-title" itemprop="name headline">一个BIO块设备驱动例子</h1>
         
 
         <div class="post-meta">
@@ -261,8 +262,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-18T10:01:16+08:00">
-                2020-07-18
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-19T18:06:20+08:00">
+                2020-07-19
               </time>
             
 
@@ -271,28 +272,6 @@
             
           </span>
 
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/start/" itemprop="url" rel="index">
-                    <span itemprop="name">start</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -321,7 +300,67 @@
       
 
       
-        <h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>欢迎你来到我的个人博客，这里是记录和分享我个人学习的地方，希望记录的信息能在你学习的道路上帮助到你</p>
+        <p>‘’’<br>#include &lt;linux/init.h&gt;<br>#include &lt;linux/module.h&gt;<br>#include &lt;linux/kernel.h&gt;<br>#include &lt;linux/fs.h&gt;<br>#include &lt;linux/errno.h&gt;<br>#include &lt;linux/types.h&gt;<br>#include &lt;linux/fcntl.h&gt;<br>#include &lt;linux/vmalloc.h&gt;<br>#include &lt;linux/hdreg.h&gt;<br>#include &lt;linux/blkdev.h&gt;<br>#include &lt;linux/blkpg.h&gt;<br>#include &lt;asm/uaccess.h&gt;  </p>
+<p>#define BLK_NAME “ram_blk”<br>#define BLK_MAJOR 222<br>#define DISK_SECTOR_SIZE 512 //每扇区大小<br>#define DISK_SECTOR 1024  //总扇区数，<br>#define DISK_SIZE (DISK_SECTOR_SIZE*DISK_SECTOR)//总大小，共0.5M  </p>
+<p>typedef struct//设备结构体<br>{<br>       unsigned char          *data;<br>       struct request_queue   *queue;<br>       struct gendisk         *gd;<br>} disk_dev;  </p>
+<p>disk_dev device;//定义设备结构体  </p>
+<p>//————————————————————————–<br>//在硬盘等带柱面扇区等的设备上使用request，可以整理队列。但是ramdisk等可以<br>//使用make_request<br>static int disk_make_request(struct request_queue <em>q,struct bio <em>bio)<br>{<br>       int i;<br>       char *mem_pbuf;<br>       char *disk_pbuf;<br>       disk_dev *pdevice;<br>       struct bio_vec *pbvec;<br>       /</em>在遍历段之前先判断要传输数据的总长度大小是否超过范围</em>/<br>       i=bio-&gt;bi_sector*DISK_SECTOR_SIZE+bio-&gt;bi_size;<br>       if(i&gt;DISK_SIZE)//判断是否超出范围<br>              goto fail;  </p>
+<pre><code>pdevice=(disk_dev*)bio-&gt;bi_bdev-&gt;bd_disk-&gt;private_data;//得到设备结构体  
+disk_pbuf=pdevice-&gt;data+bio-&gt;bi_sector*DISK_SECTOR_SIZE;//得到要读写的起始位置  
+
+/*开始遍历这个bio中的每个bio_vec*/  
+bio_for_each_segment(pbvec,bio,i)//循环分散的内存segment  
+{  
+       mem_pbuf=kmap(pbvec-&gt;bv_page)+pbvec-&gt;bv_offset;//获得实际内存地址  
+       switch(bio_data_dir(bio))  
+       {//读写  
+              case READA:  
+              case READ:  
+                     memcpy(mem_pbuf,disk_pbuf,pbvec-&gt;bv_len);  
+                     break;  
+              case WRITE:  
+                     memcpy(disk_pbuf,mem_pbuf,pbvec-&gt;bv_len);  
+                     break;  
+              default:  
+                     kunmap(pbvec-&gt;bv_page);  
+                     goto fail;  
+       }  
+       kunmap(pbvec-&gt;bv_page);//清除映射  
+       disk_pbuf+=pbvec-&gt;bv_len;  
+}  
+bio_endio(bio,0);//这个函数2.6.25和2.6.4是不一样的，  
+return 0;  </code></pre><p>fail:<br>       bio_io_error(bio);//这个函数2.6.25和2.6.4是不一样的，<br>       return 0;<br>}  </p>
+<p>int blk_open(struct block_device *dev, fmode_t no)<br>{<br>       return 0;<br>}  </p>
+<p>int blk_release(struct gendisk *gd, fmode_t no)<br>{<br>       return 0;<br>}  </p>
+<p>int blk_ioctl(struct block_device *dev, fmode_t no, unsigned cmd, unsigned long arg)<br>{<br>       return -ENOTTY;<br>}  </p>
+<p>static struct block_device_operations blk_fops=<br>{<br>       .owner=THIS_MODULE,<br>       .open=blk_open,//<br>       .release=blk_release,//<br>       .ioctl=blk_ioctl,//<br>};  </p>
+<p>int disk_init(void)<br>{<br>        if(!register_blkdev(BLK_MAJOR,BLK_NAME));//注册驱动<br>    {<br>         printk(“register blk_dev succeed\n”);<br>    }  </p>
+<pre><code>   device.data=vmalloc(DISK_SIZE);  
+   device.queue=blk_alloc_queue(GFP_KERNEL);//生成队列  
+   blk_queue_make_request(device.queue,disk_make_request);/*注册make_request  绑定请求制造函数*/  
+
+printk(&quot;make_request succeed\n&quot;);  
+
+   device.gd=alloc_disk(1);//生成gendisk  
+   device.gd-&gt;major=BLK_MAJOR;//主设备号  
+   device.gd-&gt;first_minor=0;//此设备号  
+   device.gd-&gt;fops=&amp;blk_fops;//块文件结构体变量  
+   device.gd-&gt;queue=device.queue;//请求队列  
+   device.gd-&gt;private_data=&amp;device;  
+   sprintf(device.gd-&gt;disk_name,&quot;disk%c&quot;,&apos;a&apos;);//名字  
+   set_capacity(device.gd,DISK_SECTOR);//设置大小  
+   add_disk(device.gd);//注册块设备信息  
+printk(&quot;gendisk succeed\n&quot;);      
+   return 0;  </code></pre><p>}  </p>
+<p>void disk_exit(void)<br>{  </p>
+<pre><code>del_gendisk(device.gd);  
+put_disk(device.gd);  
+unregister_blkdev(BLK_MAJOR,BLK_NAME);  
+vfree(device.data);  
+ printk(&quot;free succeed\n&quot;);  </code></pre><p>}  </p>
+<p>module_init(disk_init);<br>module_exit(disk_exit);  </p>
+<p>MODULE_LICENSE(“Dual BSD/GPL”);  </p>
+<p>‘’’</p>
 
       
     </div>
@@ -337,6 +376,12 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/linux/" rel="tag"># linux</a>
+          
+        </div>
+      
 
       
       
@@ -346,15 +391,15 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2020/07/18/deploy-k8s/" rel="next" title="deploy_k8s">
+                <i class="fa fa-chevron-left"></i> deploy_k8s
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2020/07/18/test/" rel="prev" title="test">
-                test <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -406,17 +451,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
-          </li>
-        </ul>
-      
 
-      <section class="site-overview-wrap sidebar-panel">
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -476,22 +512,6 @@
         </div>
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       
