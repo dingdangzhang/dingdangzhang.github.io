@@ -300,187 +300,8 @@
       
         
           
-            <p>‘’’<br>#include &lt;linux/init.h&gt;<br>#include &lt;linux/module.h&gt;<br>#include &lt;linux/kernel.h&gt;<br>#include &lt;linux/fs.h&gt;<br>#include &lt;linux/errno.h&gt;<br>#include &lt;linux/types.h&gt;<br>#include &lt;linux/fcntl.h&gt;<br>#include &lt;linux/vmalloc.h&gt;<br>#include &lt;linux/hdreg.h&gt;<br>#include &lt;linux/blkdev.h&gt;<br>#include &lt;linux/blkpg.h&gt;<br>#include &lt;asm/uaccess.h&gt;  </p>
-<p>#define BLK_NAME “ram_blk”<br>#define BLK_MAJOR 222<br>#define DISK_SECTOR_SIZE 512 //每扇区大小<br>#define DISK_SECTOR 1024  //总扇区数，<br>#define DISK_SIZE (DISK_SECTOR_SIZE*DISK_SECTOR)//总大小，共0.5M  </p>
-<p>typedef struct//设备结构体<br>{<br>       unsigned char          *data;<br>       struct request_queue   *queue;<br>       struct gendisk         *gd;<br>} disk_dev;  </p>
-<p>disk_dev device;//定义设备结构体  </p>
-<p>//————————————————————————–<br>//在硬盘等带柱面扇区等的设备上使用request，可以整理队列。但是ramdisk等可以<br>//使用make_request<br>static int disk_make_request(struct request_queue <em>q,struct bio <em>bio)<br>{<br>       int i;<br>       char *mem_pbuf;<br>       char *disk_pbuf;<br>       disk_dev *pdevice;<br>       struct bio_vec *pbvec;<br>       /</em>在遍历段之前先判断要传输数据的总长度大小是否超过范围</em>/<br>       i=bio-&gt;bi_sector*DISK_SECTOR_SIZE+bio-&gt;bi_size;<br>       if(i&gt;DISK_SIZE)//判断是否超出范围<br>              goto fail;  </p>
-<pre><code>pdevice=(disk_dev*)bio-&gt;bi_bdev-&gt;bd_disk-&gt;private_data;//得到设备结构体  
-disk_pbuf=pdevice-&gt;data+bio-&gt;bi_sector*DISK_SECTOR_SIZE;//得到要读写的起始位置  
+            <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/init.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/module.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/kernel.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/fs.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/errno.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/types.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/fcntl.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/vmalloc.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/hdreg.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/blkdev.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;linux/blkpg.h&gt;  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;asm/uaccess.h&gt;  </span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BLK_NAME <span class="meta-string">"ram_blk"</span>  </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BLK_MAJOR 222  </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DISK_SECTOR_SIZE 512 <span class="comment">//每扇区大小  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DISK_SECTOR 1024  <span class="comment">//总扇区数，  </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DISK_SIZE (DISK_SECTOR_SIZE*DISK_SECTOR)<span class="comment">//总大小，共0.5M  </span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>//设备结构体  </span></span><br><span class="line"><span class="class">&#123;</span>  </span><br><span class="line">       <span class="keyword">unsigned</span> <span class="keyword">char</span>          *data;  </span><br><span class="line">       <span class="class"><span class="keyword">struct</span> <span class="title">request_queue</span>   *<span class="title">queue</span>;</span>  </span><br><span class="line">       <span class="class"><span class="keyword">struct</span> <span class="title">gendisk</span>         *<span class="title">gd</span>;</span>  </span><br><span class="line">&#125; disk_dev;  </span><br><span class="line"></span><br><span class="line">disk_dev device;<span class="comment">//定义设备结构体  </span></span><br><span class="line"></span><br><span class="line"><span class="comment">//--------------------------------------------------------------------------  </span></span><br><span class="line"><span class="comment">//在硬盘等带柱面扇区等的设备上使用request，可以整理队列。但是ramdisk等可以  </span></span><br><span class="line"><span class="comment">//使用make_request  </span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">disk_make_request</span><span class="params">(struct request_queue *q,struct bio *bio)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">       <span class="keyword">int</span> i;  </span><br><span class="line">       <span class="keyword">char</span> *mem_pbuf;  </span><br><span class="line">       <span class="keyword">char</span> *disk_pbuf;  </span><br><span class="line">       disk_dev *pdevice;  </span><br><span class="line">       <span class="class"><span class="keyword">struct</span> <span class="title">bio_vec</span> *<span class="title">pbvec</span>;</span>  </span><br><span class="line">       <span class="comment">/*在遍历段之前先判断要传输数据的总长度大小是否超过范围*/</span>  </span><br><span class="line">       i=bio-&gt;bi_sector*DISK_SECTOR_SIZE+bio-&gt;bi_size;  </span><br><span class="line">       <span class="keyword">if</span>(i&gt;DISK_SIZE)<span class="comment">//判断是否超出范围  </span></span><br><span class="line">              <span class="keyword">goto</span> fail;  </span><br><span class="line"></span><br><span class="line">       pdevice=(disk_dev*)bio-&gt;bi_bdev-&gt;bd_disk-&gt;private_data;<span class="comment">//得到设备结构体  </span></span><br><span class="line">       disk_pbuf=pdevice-&gt;data+bio-&gt;bi_sector*DISK_SECTOR_SIZE;<span class="comment">//得到要读写的起始位置  </span></span><br><span class="line"></span><br><span class="line">       <span class="comment">/*开始遍历这个bio中的每个bio_vec*/</span>  </span><br><span class="line">       bio_for_each_segment(pbvec,bio,i)<span class="comment">//循环分散的内存segment  </span></span><br><span class="line">       &#123;  </span><br><span class="line">              mem_pbuf=kmap(pbvec-&gt;bv_page)+pbvec-&gt;bv_offset;<span class="comment">//获得实际内存地址  </span></span><br><span class="line">              <span class="keyword">switch</span>(bio_data_dir(bio))  </span><br><span class="line">              &#123;<span class="comment">//读写  </span></span><br><span class="line">                     <span class="keyword">case</span> READA:  </span><br><span class="line">                     <span class="keyword">case</span> READ:  </span><br><span class="line">                            <span class="built_in">memcpy</span>(mem_pbuf,disk_pbuf,pbvec-&gt;bv_len);  </span><br><span class="line">                            <span class="keyword">break</span>;  </span><br><span class="line">                     <span class="keyword">case</span> WRITE:  </span><br><span class="line">                            <span class="built_in">memcpy</span>(disk_pbuf,mem_pbuf,pbvec-&gt;bv_len);  </span><br><span class="line">                            <span class="keyword">break</span>;  </span><br><span class="line">                     <span class="keyword">default</span>:  </span><br><span class="line">                            kunmap(pbvec-&gt;bv_page);  </span><br><span class="line">                            <span class="keyword">goto</span> fail;  </span><br><span class="line">              &#125;  </span><br><span class="line">              kunmap(pbvec-&gt;bv_page);<span class="comment">//清除映射  </span></span><br><span class="line">              disk_pbuf+=pbvec-&gt;bv_len;  </span><br><span class="line">       &#125;  </span><br><span class="line">       bio_endio(bio,<span class="number">0</span>);<span class="comment">//这个函数2.6.25和2.6.4是不一样的，  </span></span><br><span class="line">       <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">fail:  </span><br><span class="line">       bio_io_error(bio);<span class="comment">//这个函数2.6.25和2.6.4是不一样的，  </span></span><br><span class="line">       <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">blk_open</span><span class="params">(struct block_device *dev, <span class="keyword">fmode_t</span> no)</span>   </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">       <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">blk_release</span><span class="params">(struct gendisk *gd, <span class="keyword">fmode_t</span> no)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">       <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">blk_ioctl</span><span class="params">(struct block_device *dev, <span class="keyword">fmode_t</span> no, <span class="keyword">unsigned</span> cmd, <span class="keyword">unsigned</span> <span class="keyword">long</span> arg)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">       <span class="keyword">return</span> -ENOTTY;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">block_device_operations</span> <span class="title">blk_fops</span>=  </span></span><br><span class="line"><span class="class">&#123;</span>  </span><br><span class="line">       .owner=THIS_MODULE,  </span><br><span class="line">       .open=blk_open,<span class="comment">//  </span></span><br><span class="line">       .release=blk_release,<span class="comment">//  </span></span><br><span class="line">       .ioctl=blk_ioctl,<span class="comment">//   </span></span><br><span class="line">&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">disk_init</span><span class="params">(<span class="keyword">void</span>)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">        <span class="keyword">if</span>(!register_blkdev(BLK_MAJOR,BLK_NAME));<span class="comment">//注册驱动  </span></span><br><span class="line">    &#123;  </span><br><span class="line">         printk(<span class="string">"register blk_dev succeed\n"</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line"></span><br><span class="line">       device.data=vmalloc(DISK_SIZE);  </span><br><span class="line">       device.<span class="built_in">queue</span>=blk_alloc_queue(GFP_KERNEL);<span class="comment">//生成队列  </span></span><br><span class="line">       blk_queue_make_request(device.<span class="built_in">queue</span>,disk_make_request);<span class="comment">/*注册make_request  绑定请求制造函数*/</span>  </span><br><span class="line"></span><br><span class="line">    printk(<span class="string">"make_request succeed\n"</span>);  </span><br><span class="line"></span><br><span class="line">       device.gd=alloc_disk(<span class="number">1</span>);<span class="comment">//生成gendisk  </span></span><br><span class="line">       device.gd-&gt;major=BLK_MAJOR;<span class="comment">//主设备号  </span></span><br><span class="line">       device.gd-&gt;first_minor=<span class="number">0</span>;<span class="comment">//此设备号  </span></span><br><span class="line">       device.gd-&gt;fops=&amp;blk_fops;<span class="comment">//块文件结构体变量  </span></span><br><span class="line">       device.gd-&gt;<span class="built_in">queue</span>=device.<span class="built_in">queue</span>;<span class="comment">//请求队列  </span></span><br><span class="line">       device.gd-&gt;private_data=&amp;device;  </span><br><span class="line">       <span class="built_in">sprintf</span>(device.gd-&gt;disk_name,<span class="string">"disk%c"</span>,<span class="string">'a'</span>);<span class="comment">//名字  </span></span><br><span class="line">       set_capacity(device.gd,DISK_SECTOR);<span class="comment">//设置大小  </span></span><br><span class="line">       add_disk(device.gd);<span class="comment">//注册块设备信息  </span></span><br><span class="line">    printk(<span class="string">"gendisk succeed\n"</span>);      </span><br><span class="line">       <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">disk_exit</span><span class="params">(<span class="keyword">void</span>)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line"></span><br><span class="line">       del_gendisk(device.gd);  </span><br><span class="line">       put_disk(device.gd);  </span><br><span class="line">       unregister_blkdev(BLK_MAJOR,BLK_NAME);  </span><br><span class="line">       vfree(device.data);  </span><br><span class="line">        printk(<span class="string">"free succeed\n"</span>);  </span><br><span class="line"></span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">module_init(disk_init);  </span><br><span class="line">module_exit(disk_exit);  </span><br><span class="line"></span><br><span class="line">MODULE_LICENSE(<span class="string">"Dual BSD/GPL"</span>);</span><br></pre></td></tr></table></figure>
 
-/*开始遍历这个bio中的每个bio_vec*/  
-bio_for_each_segment(pbvec,bio,i)//循环分散的内存segment  
-{  
-       mem_pbuf=kmap(pbvec-&gt;bv_page)+pbvec-&gt;bv_offset;//获得实际内存地址  
-       switch(bio_data_dir(bio))  
-       {//读写  
-              case READA:  
-              case READ:  
-                     memcpy(mem_pbuf,disk_pbuf,pbvec-&gt;bv_len);  
-                     break;  
-              case WRITE:  
-                     memcpy(disk_pbuf,mem_pbuf,pbvec-&gt;bv_len);  
-                     break;  
-              default:  
-                     kunmap(pbvec-&gt;bv_page);  
-                     goto fail;  
-       }  
-       kunmap(pbvec-&gt;bv_page);//清除映射  
-       disk_pbuf+=pbvec-&gt;bv_len;  
-}  
-bio_endio(bio,0);//这个函数2.6.25和2.6.4是不一样的，  
-return 0;  </code></pre><p>fail:<br>       bio_io_error(bio);//这个函数2.6.25和2.6.4是不一样的，<br>       return 0;<br>}  </p>
-<p>int blk_open(struct block_device *dev, fmode_t no)<br>{<br>       return 0;<br>}  </p>
-<p>int blk_release(struct gendisk *gd, fmode_t no)<br>{<br>       return 0;<br>}  </p>
-<p>int blk_ioctl(struct block_device *dev, fmode_t no, unsigned cmd, unsigned long arg)<br>{<br>       return -ENOTTY;<br>}  </p>
-<p>static struct block_device_operations blk_fops=<br>{<br>       .owner=THIS_MODULE,<br>       .open=blk_open,//<br>       .release=blk_release,//<br>       .ioctl=blk_ioctl,//<br>};  </p>
-<p>int disk_init(void)<br>{<br>        if(!register_blkdev(BLK_MAJOR,BLK_NAME));//注册驱动<br>    {<br>         printk(“register blk_dev succeed\n”);<br>    }  </p>
-<pre><code>   device.data=vmalloc(DISK_SIZE);  
-   device.queue=blk_alloc_queue(GFP_KERNEL);//生成队列  
-   blk_queue_make_request(device.queue,disk_make_request);/*注册make_request  绑定请求制造函数*/  
-
-printk(&quot;make_request succeed\n&quot;);  
-
-   device.gd=alloc_disk(1);//生成gendisk  
-   device.gd-&gt;major=BLK_MAJOR;//主设备号  
-   device.gd-&gt;first_minor=0;//此设备号  
-   device.gd-&gt;fops=&amp;blk_fops;//块文件结构体变量  
-   device.gd-&gt;queue=device.queue;//请求队列  
-   device.gd-&gt;private_data=&amp;device;  
-   sprintf(device.gd-&gt;disk_name,&quot;disk%c&quot;,&apos;a&apos;);//名字  
-   set_capacity(device.gd,DISK_SECTOR);//设置大小  
-   add_disk(device.gd);//注册块设备信息  
-printk(&quot;gendisk succeed\n&quot;);      
-   return 0;  </code></pre><p>}  </p>
-<p>void disk_exit(void)<br>{  </p>
-<pre><code>del_gendisk(device.gd);  
-put_disk(device.gd);  
-unregister_blkdev(BLK_MAJOR,BLK_NAME);  
-vfree(device.data);  
- printk(&quot;free succeed\n&quot;);  </code></pre><p>}  </p>
-<p>module_init(disk_init);<br>module_exit(disk_exit);  </p>
-<p>MODULE_LICENSE(“Dual BSD/GPL”);  </p>
-<p>‘’’</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/07/18/deploy-k8s/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="欢迎来到小张张最帅的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/07/18/deploy-k8s/" itemprop="url">deploy_k8s</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-07-18T13:34:04+08:00">
-                2020-07-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
           
         
       
@@ -822,7 +643,7 @@ vfree(device.data);
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -844,7 +665,7 @@ vfree(device.data);
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">1</span>
                   <span class="site-state-item-name">tags</span>
                 
               </div>
